@@ -13,6 +13,7 @@ export async function getStats() {
       count(*) FILTER (WHERE status = 'escalate')::int                 AS escalate,
       count(*) FILTER (WHERE handoff_status = 'sent')::int             AS handoff_sent,
       count(*) FILTER (WHERE handoff_status = 'failed')::int           AS handoff_failed,
+      count(*) FILTER (WHERE 'priority_recovery' = ANY(flags))::int    AS priority_recovery,
       count(*) FILTER (WHERE consultation_at IS NOT NULL)::int         AS booked,
       count(*) FILTER (WHERE hubspot_deal_id IS NOT NULL)::int         AS deals,
       count(*) FILTER (WHERE price_asked)::int                         AS price_asked,
@@ -23,8 +24,8 @@ export async function getStats() {
       sum(openai_tokens)::int                                          AS openai_tokens
     FROM calls`);
   const recent = await db.query(`
-    SELECT id, received_at, caller_name, caller_phone, status, reason, flags, after_hours, duration_seconds,
-           consultation_at, hubspot_deal_id, handoff_status
-    FROM calls ORDER BY received_at DESC LIMIT 25`);
+    SELECT id, received_at, caller_name, caller_phone, status, reason, flags, after_hours,
+           consultation_at, handoff_status
+    FROM calls ORDER BY received_at DESC LIMIT 100`);
   return { t, recent };
 }
