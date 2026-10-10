@@ -34,16 +34,20 @@ export async function POST(req: Request) {
   const callId = str(body.call_id) ?? str(data.call_id) ?? str(data.room_name);
   if (!callId) return new Response("No call id", { status: 400 });
 
-  const ms = num(data.call_duration); // post-processing sends milliseconds
-  const ts = num(body.timestamp);
+  // Seen in a real call: call_duration is in SECONDS (44.24 for a 44-second call), although Vaani's docs say milliseconds.
+  const seconds = num(data.call_duration);
+  // Web test calls send "web-user" instead of a phone number, so only accept something that looks like a number.
+  const phoneRaw = str(data.from_number) ?? str(data.phone_number) ?? str(body.from);
+  const callerPhone = phoneRaw && /\d{7,}/.test(phoneRaw) ? phoneRaw : null;
+  const started = new Date(str(data.call_started_at) ?? str(body.timestamp) ?? Date.now());
   try {
     const result = await processCall({
       vaaniCallId: callId,
       transcript: str(data.transcript),
       summary: str(data.summary),
-      callerPhone: str(data.from_number) ?? str(data.phone_number) ?? null,
-      durationSeconds: ms === null ? null : ms / 1000,
-      startedAt: ts ? new Date(ts > 1e12 ? ts : ts * 1000) : new Date(),
+      callerPhone,
+      durationSeconds: seconds,
+      startedAt: isNaN(started.getTime()) ? new Date() : started,
       raw: body,
     });
     return Response.json({ ok: true, ...result });
