@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aangan Studio: phone enquiry system
 
-## Getting Started
+A voice agent (Vaani) answers enquiry calls for Aangan Studio, an interior design studio in Pune. When a call ends, Vaani sends the call to this app, which reads it with OpenAI, applies the qualification rules, saves it in Neon, books/looks up the Cal.com consultation, creates a HubSpot deal for qualified enquiries, emails the designer (Resend) and shows everything on a password-protected dashboard.
 
-First, run the development server:
+Phone calls only. WhatsApp and web forms are out of scope.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## How it fits together
+- `agent/system-prompt.ts` — what the voice agent says (includes the one allowed pricing reply). `npm run agent:create` pushes it to Vaani.
+- `app/api/vaani-webhook/route.ts` — receives the finished call (needs `?token=WEBHOOK_TOKEN`).
+- `lib/extract.ts` — OpenAI turns the transcript into plain facts.
+- `lib/qualification.ts` — the rules. Edit rules here; defaults are marked `DEFAULT`.
+- `lib/cal.ts`, `lib/hubspot.ts`, `lib/handoff.ts` — Cal.com, HubSpot, Resend.
+- `app/page.tsx` — the dashboard. `proxy.ts` puts a password on it.
+- `db/schema.sql` — the one `calls` table. `npm run setup:db` creates it.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run it yourself
+1. `npm install`
+2. Copy `.env.example` to `.env.local` and fill in every value. Never commit `.env.local`.
+3. `npm run setup:db`, then `npm run dev`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tests
+- `npm run test:rules` — rules against 20 scripted calls (no internet).
+- `npm run test:extraction` — the same 20 calls through OpenAI (uses your OpenAI key).
+The 20 calls are scripted from the project brief, not the original transcripts.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Known gaps
+- Vaani does not report time-to-answer or (so far) call cost in the webhook, so the dashboard shows "Not available" for those.
+- Vaani's booking tool can report an error even when Cal.com made the booking. The app checks Cal.com after the call.
+- Resend without a verified domain only delivers to the account owner's address.
