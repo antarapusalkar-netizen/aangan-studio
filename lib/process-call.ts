@@ -41,7 +41,7 @@ export async function processCall(call: FinishedCall) {
                         openai_tokens, facts, status, reason, flags, price_asked, raw_payload)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      ON CONFLICT (vaani_call_id) DO UPDATE SET
-       transcript = EXCLUDED.transcript, summary = EXCLUDED.summary, duration_seconds = COALESCE(EXCLUDED.duration_seconds, calls.duration_seconds),
+       transcript = EXCLUDED.transcript, summary = COALESCE(EXCLUDED.summary, calls.summary), duration_seconds = COALESCE(EXCLUDED.duration_seconds, calls.duration_seconds),
        openai_tokens = EXCLUDED.openai_tokens, facts = EXCLUDED.facts, status = EXCLUDED.status, reason = EXCLUDED.reason,
        flags = EXCLUDED.flags, price_asked = EXCLUDED.price_asked, raw_payload = EXCLUDED.raw_payload`,
     [
