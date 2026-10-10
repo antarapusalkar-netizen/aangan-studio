@@ -1,7 +1,7 @@
 -- One table. One row per phone/web call. Run this once in the Neon SQL Editor.
 CREATE TABLE IF NOT EXISTS calls (
   id              SERIAL PRIMARY KEY,
-  vaani_call_id   TEXT UNIQUE NOT NULL,   -- Vaani's id; stops duplicate webhook deliveries
+  vaani_call_id   TEXT UNIQUE NOT NULL,   -- Vaani id, stops duplicate webhook deliveries
   received_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   after_hours     BOOLEAN,                -- called outside 10am-7pm IST
 
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS calls (
   summary         TEXT,
 
   duration_seconds NUMERIC,               -- NULL if Vaani did not send it
-  cost_credits     NUMERIC,               -- Vaani "credits"; NULL until fetched. Not assumed to be rupees.
+  cost_credits     NUMERIC,               -- Vaani credits, NULL until fetched, not assumed to be rupees
   openai_tokens    INTEGER,
 
   facts           JSONB,                  -- what OpenAI extracted from the call
