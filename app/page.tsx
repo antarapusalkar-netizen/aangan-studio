@@ -10,6 +10,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 };
 
 const mins = (s: number) => (s < 90 ? `${Math.round(s)}s` : `${(s / 60).toFixed(1)} min`);
+const maskPhone = (p: string | null) => (p ? `•••• ${p.replace(/\D/g, "").slice(-4)}` : "no number");
 const when = (d: string | Date) => new Date(d).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 
 function Tile({ label, value, note }: { label: string; value: string | number | null; note?: string }) {
@@ -85,7 +86,7 @@ async function Dashboard() {
                 return (
                   <tr key={c.id}>
                     <td>{when(c.received_at)}{c.after_hours ? <div className="muted">after hours</div> : null}</td>
-                    <td>{c.caller_name ?? <span className="muted">Unknown</span>}<div className="muted">{c.caller_phone ?? "no number"}</div></td>
+                    <td>{c.caller_name ?? <span className="muted">Unknown</span>}<div className="muted">{maskPhone(c.caller_phone)}</div></td>
                     <td><span className="pill" style={{ color: s.color }}>{s.label}</span>{(c.flags ?? []).map((f: string) => <div className="flag" key={f}>{f.replace(/_/g, " ")}</div>)}</td>
                     <td>{c.consultation_at ? when(c.consultation_at) : <span className="muted">None</span>}</td>
                     <td>{c.handoff_status === "sent" ? "Sent" : c.handoff_status === "failed" ? <span style={{ color: "var(--bad)" }}>Failed</span> : <span className="muted">Not needed</span>}</td>

@@ -10,7 +10,7 @@ Phone calls only. WhatsApp and web forms are out of scope.
 - `lib/extract.ts` — OpenAI turns the transcript into plain facts.
 - `lib/qualification.ts` — the rules. Edit rules here; defaults are marked `DEFAULT`.
 - `lib/cal.ts`, `lib/hubspot.ts`, `lib/handoff.ts` — Cal.com, HubSpot, Resend.
-- `app/page.tsx` — the dashboard. `proxy.ts` puts a password on it.
+- `app/page.tsx` — the dashboard. It is open to anyone with the link; phone numbers are masked.
 - `db/schema.sql` — the one `calls` table. `npm run setup:db` creates it.
 
 ## Run it yourself
