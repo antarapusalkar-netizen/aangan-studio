@@ -2,6 +2,7 @@
 import { sql } from "./db";
 import { extractFacts } from "./extract";
 import { decide } from "./qualification";
+import { sendHandoff } from "./handoff";
 
 export type FinishedCall = {
   vaaniCallId: string;
@@ -50,5 +51,23 @@ export async function processCall(call: FinishedCall) {
       decision.status, decision.reason, decision.flags, facts.asked_for_price, JSON.stringify(call.raw),
     ],
   );
-  return { status: decision.status, saved: true };
+
+  // Qualified enquiries and escalations are handed to a designer by email.
+  let handoff: "sent" | "failed" | "not_needed" = "not_needed";
+  const already = (await db.query("SELECT handoff_status FROM calls WHERE vaani_call_id=$1", [call.vaaniCallId]))[0]?.handoff_status === "sent";
+  if (already) handoff = "sent"; // a repeat delivery of the same call must not email the designer twice
+  else if (decision.status === "qualified" || decision.status === "escalate") {
+    try {
+      await sendHandoff({
+        status: decision.status, reason: decision.reason, flags: decision.flags, callerName: facts.caller_name,
+        callerPhone: call.callerPhone ?? facts.caller_phone, facts, summary: call.summary, consultation: null,
+      });
+      handoff = "sent";
+      await db.query("UPDATE calls SET handoff_status='sent', handoff_error=NULL WHERE vaani_call_id=$1", [call.vaaniCallId]);
+    } catch (e) {
+      handoff = "failed";
+      await db.query("UPDATE calls SET handoff_status='failed', handoff_error=$2 WHERE vaani_call_id=$1", [call.vaaniCallId, String(e).slice(0, 300)]);
+    }
+  }
+  return { status: decision.status, saved: true, handoff };
 }
