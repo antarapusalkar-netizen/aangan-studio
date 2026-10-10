@@ -81,3 +81,13 @@ function priorityFlags(f: Facts): string[] {
 function clarify(question: string, what: string): Decision {
   return { status: "needs_clarification", reason: `Unclear: ${what}.`, question, flags: [] };
 }
+
+// Turns "how many weeks until the caller needs it" into a timeline value. The thresholds live here, not in the AI.
+// qualified.md says 8-10 weeks; services.md says under 6 weeks cannot begin.
+// DEFAULT 2: use 8 weeks as "ok", under 6 weeks as "too_soon", and ask one question for anything in between.
+export function timelineFrom(weeks: number | null, canStartLater: boolean): Facts["timeline"] {
+  if (weeks !== null && weeks >= 8) return "ok";
+  if (canStartLater) return "can_start_later";
+  if (weeks === null) return "unclear";
+  return weeks < 6 ? "too_soon" : "unclear";
+}

@@ -24,7 +24,10 @@ CREATE TABLE IF NOT EXISTS calls (
   cal_booking_id  TEXT,
   hubspot_deal_id TEXT,
   handoff_status  TEXT NOT NULL DEFAULT 'not_needed',  -- not_needed | sent | failed
-  handoff_error   TEXT
+  handoff_error   TEXT,
+  raw_payload     JSONB                   -- the webhook body exactly as Vaani sent it
 );
+
+ALTER TABLE calls ADD COLUMN IF NOT EXISTS raw_payload JSONB;
 
 CREATE INDEX IF NOT EXISTS calls_received_at_idx ON calls (received_at DESC);

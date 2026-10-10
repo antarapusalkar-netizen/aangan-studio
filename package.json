@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:rules": "tsx scripts/test-rules.ts",
-    "setup:db": "tsx --env-file=.env.local scripts/setup-db.ts"
+    "setup:db": "tsx --env-file=.env.local scripts/setup-db.ts",
+    "test:extraction": "tsx --env-file=.env.local scripts/test-extraction.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
